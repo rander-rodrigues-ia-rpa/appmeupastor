@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos globais para o tema verde */
+:root {
+  --color-primary: #16a34a; /* green-600 */
+  --color-primary-dark: #15803d; /* green-700 */
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  min-width: 320px;
+}
+
+/* Estilo para links com ícone (requisito 12) */
+.link-with-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.link-with-icon:hover {
+  color: var(--color-primary-dark);
+}
+
+.link-with-icon svg {
+  margin-right: 4px;
+  height: 1em;
+  width: 1em;
+}
+
+/* Ajuste para responsividade do menu lateral */
+@media (max-width: 768px) {
+  .flex-col {
+    flex-direction: column;
+  }
+  .w-64 {
+    width: 100%;
+    height: auto;
+  }
+  .flex-1 {
+    min-width: 0;
+  }
+}
