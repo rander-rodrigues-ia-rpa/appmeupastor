@@ -7,17 +7,18 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copia os arquivos de configuração do pnpm e do projeto
-COPY package.json pnpm-lock.yaml ./
+# O arquivo de lock correto é pnpm-lock.yaml
+COPY package.json ./
 
-# Instala as dependências
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
+# Instala as dependências (incluindo devDependencies)
+# Usamos --production=false para garantir que o Tailwind CSS (devDependency) seja instalado
+RUN npm install
 
 # Copia o restante do código
 COPY . .
 
 # Constrói a aplicação (gera os arquivos estáticos)
-# O comando de build do Vite deve ser ajustado conforme o package.json
-RUN pnpm run build
+RUN npm run build
 
 # 2. Estágio Final (Servir os arquivos estáticos com Nginx)
 FROM nginx:alpine

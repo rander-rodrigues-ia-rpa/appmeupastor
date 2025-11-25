@@ -9,7 +9,8 @@ import Login from "./pages/Login";
 import { useAuth } from "./hooks/useAuth";
 
 // Componente de Rota Protegida
-const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+import React, { isValidElement, ReactElement } from "react";
+const ProtectedRoute = ({ children }: { children: ReactElement }) => {
   const { isAuthenticated, isProfileComplete } = useAuth();
 
   if (!isAuthenticated) {
@@ -18,7 +19,8 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 
   // Se o usuário estiver autenticado, mas o perfil não estiver completo,
   // redireciona para a página de cadastro para completar.
-  if (!isProfileComplete && children.type !== MeuCadastro) {
+  // Verifica se children é um elemento React válido antes de acessar .type
+  if (!isProfileComplete && isValidElement(children) && children.type !== MeuCadastro) {
     return <Navigate to="/meu-cadastro" replace />;
   }
 

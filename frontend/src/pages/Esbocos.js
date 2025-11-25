@@ -1,0 +1,44 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { useState, useEffect } from "react";
+import api from "../services/api";
+import { PlusIcon, PencilIcon, TrashIcon, LinkIcon } from "@heroicons/react/24/outline";
+const Esbocos = () => {
+    const [esbocos, setEsbocos] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const fetchEsbocos = async () => {
+        try {
+            const response = await api.get("/esbocos");
+            setEsbocos(response.data);
+            setLoading(false);
+        }
+        catch (err) {
+            setError("Erro ao carregar esboços.");
+            setLoading(false);
+        }
+    };
+    useEffect(() => {
+        fetchEsbocos();
+    }, []);
+    const handleDeleteEsboco = async (id) => {
+        if (!window.confirm("Tem certeza que deseja deletar este esboço?"))
+            return;
+        try {
+            await api.delete(`/esbocos/${id}`);
+            setEsbocos(esbocos.filter(e => e.id !== id));
+        }
+        catch (err) {
+            alert("Erro ao deletar esboço.");
+        }
+    };
+    if (loading)
+        return _jsx("div", { className: "text-center", children: "Carregando esbo\u00E7os..." });
+    if (error)
+        return _jsx("div", { className: "text-center text-red-500", children: error });
+    return (_jsxs("div", { className: "space-y-6", children: [_jsx("h2", { className: "text-3xl font-bold text-gray-800", children: "Cat\u00E1logo de Esbo\u00E7os" }), _jsx("div", { className: "flex justify-end", children: _jsxs("button", { 
+                    // Ação de abrir modal ou redirecionar para formulário de criação
+                    className: "flex items-center bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors", children: [_jsx(PlusIcon, { className: "h-5 w-5 mr-2" }), " Novo Esbo\u00E7o"] }) }), _jsxs("div", { className: "bg-white p-6 rounded-lg shadow-md", children: [_jsx("h3", { className: "text-xl font-semibold mb-4", children: "Meus Esbo\u00E7os" }), _jsx("div", { className: "overflow-x-auto", children: _jsxs("table", { className: "min-w-full divide-y divide-gray-200", children: [_jsx("thead", { className: "bg-gray-50", children: _jsxs("tr", { children: [_jsx("th", { className: "px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider", children: "T\u00EDtulo" }), _jsx("th", { className: "px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider", children: "Texto B\u00EDblico" }), _jsx("th", { className: "px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider", children: "Links" }), _jsx("th", { className: "px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider", children: "A\u00E7\u00F5es" })] }) }), _jsx("tbody", { className: "bg-white divide-y divide-gray-200", children: esbocos.map((esboco) => (_jsxs("tr", { children: [_jsx("td", { className: "px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900", children: esboco.titulo }), _jsx("td", { className: "px-6 py-4 whitespace-nowrap text-sm text-gray-500", children: esboco.texto_biblico }), _jsxs("td", { className: "px-6 py-4 whitespace-nowrap text-sm text-gray-500", children: [esboco.link_arquivo_esboco && (_jsx("a", { href: esboco.link_arquivo_esboco, target: "_blank", rel: "noopener noreferrer", className: "text-blue-600 hover:text-blue-900 mr-2", title: "Arquivo Esbo\u00E7o", children: _jsx(LinkIcon, { className: "h-5 w-5 inline" }) })), esboco.link_arquivo_pregacao_completa && (_jsx("a", { href: esboco.link_arquivo_pregacao_completa, target: "_blank", rel: "noopener noreferrer", className: "text-green-600 hover:text-green-900", title: "Prega\u00E7\u00E3o Completa", children: _jsx(LinkIcon, { className: "h-5 w-5 inline" }) }))] }), _jsxs("td", { className: "px-6 py-4 whitespace-nowrap text-right text-sm font-medium", children: [_jsx("button", { 
+                                                        // Ação de editar
+                                                        className: "text-blue-500 hover:text-blue-700 p-1 rounded-full hover:bg-blue-100 mr-2", title: "Editar Esbo\u00E7o", children: _jsx(PencilIcon, { className: "h-5 w-5" }) }), _jsx("button", { onClick: () => handleDeleteEsboco(esboco.id), className: "text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100", title: "Deletar Esbo\u00E7o", children: _jsx(TrashIcon, { className: "h-5 w-5" }) })] })] }, esboco.id))) })] }) })] })] }));
+};
+export default Esbocos;

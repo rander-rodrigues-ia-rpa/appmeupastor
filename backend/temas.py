@@ -3,10 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import delete, update
 from typing import List
-from .database import get_db
-from .models import Tema, Subtema, Usuario
-from .schemas import Tema as TemaSchema, TemaCreate, TemaUpdate, Subtema as SubtemaSchema, SubtemaCreate, SubtemaUpdate
-from .security import get_current_complete_user
+from database import get_db
+from models import Tema, Subtema, Usuario
+from schemas import Tema as TemaSchema, TemaCreate, TemaUpdate, Subtema as SubtemaSchema, SubtemaCreate, SubtemaUpdate
+from security import get_current_complete_user
 
 router = APIRouter(
     prefix="/temas",

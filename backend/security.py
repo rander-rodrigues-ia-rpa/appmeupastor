@@ -6,10 +6,10 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from .config import settings
-from .models import Usuario
-from .schemas import TokenData
-from .database import get_db
+from config import settings
+from models import Usuario
+from schemas import TokenData
+from database import get_db
 
 # Configuração de Hashing de Senha
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

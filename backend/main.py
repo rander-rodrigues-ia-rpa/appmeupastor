@@ -1,13 +1,13 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
-from .database import init_db
-from .auth import router as auth_router
-from .users import router as users_router
-from .temas import router as temas_router
-from .esbocos import router as esbocos_router
-from .versiculos import router as versiculos_router
-from .dashboard import router as dashboard_router
+from database import init_db
+from auth import router as auth_router
+from users import router as users_router
+from temas import router as temas_router
+from esbocos import router as esbocos_router
+from versiculos import router as versiculos_router
+from dashboard import router as dashboard_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

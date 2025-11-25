@@ -1,6 +1,6 @@
 import redis.asyncio as redis
 from typing import Optional
-from .config import settings
+from config import settings
 
 # Inicializa o cliente Redis
 # Usaremos um cliente síncrono para simplicidade no ambiente sandbox, mas o redis.asyncio é mais adequado para FastAPI.

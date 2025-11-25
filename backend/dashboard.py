@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import func
-from .database import get_db
-from .models import CatalogoEsbocos, VersiculoTema, Usuario
-from .security import get_current_complete_user
-from .cache import cache
+from database import get_db
+from models import CatalogoEsbocos, VersiculoTema, Usuario
+from security import get_current_complete_user
+from cache import cache
 
 router = APIRouter(
     prefix="/dashboard",

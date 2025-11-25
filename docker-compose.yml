@@ -1,0 +1,24 @@
+services:
+  # Serviço do Backend Python
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: meu-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app # Hot-reload em desenvolvimento (opcional)
+    environment:
+      - DATABASE_URL=... # Suas variáveis de ambiente aqui
+
+  # Serviço do Frontend React (que você acabou de corrigir)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: meu-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
