@@ -27,7 +27,7 @@ FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Expõe a porta padrão do Nginx
-EXPOSE 80
+EXPOSE 8005
 
 # O comando padrão do Nginx já serve os arquivos estáticos
 CMD ["nginx", "-g", "daemon off;"]

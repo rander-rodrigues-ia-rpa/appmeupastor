@@ -24,8 +24,8 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 COPY . .
 
 # Expõe a porta que o Uvicorn irá rodar
-EXPOSE 8000
+EXPOSE 8003
 
 # Comando para rodar a aplicação com Uvicorn
 # O host 0.0.0.0 é necessário para que o container seja acessível externamente
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8003"]

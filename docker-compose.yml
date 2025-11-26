@@ -6,11 +6,11 @@ services:
       dockerfile: Dockerfile
     container_name: meu-backend
     ports:
-      - "8000:8000"
+      - "8003:8003"
     volumes:
       - ./backend:/app # Hot-reload em desenvolvimento (opcional)
     environment:
-      - DATABASE_URL=... # Suas variáveis de ambiente aqui
+      - DATABASE_URL=postgresql+asyncpg://admin:vps%402025_123@172.17.0.1:5432/rrsolucoes_ia
 
   # Serviço do Frontend React (que você acabou de corrigir)
   frontend:
@@ -19,6 +19,6 @@ services:
       dockerfile: Dockerfile
     container_name: meu-frontend
     ports:
-      - "80:80"
+      - "8005:8005"
     depends_on:
       - backend
