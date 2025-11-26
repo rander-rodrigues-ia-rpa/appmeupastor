@@ -1,14 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    {/* O BrowserRouter envolve toda a aplicação AQUI */}
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    {/* Apenas renderiza o App. O roteamento está dentro dele. */}
+    <App />
   </React.StrictMode>
 );

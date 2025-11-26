@@ -1,5 +1,8 @@
-import { jsx as _jsx } from "react/jsx-runtime";
+import React from 'react';
 import { createBrowserRouter, Navigate } from "react-router-dom";
+import { useAuth } from "./hooks/useAuth";
+
+// Importe seus componentes (garanta que os caminhos estejam certos)
 import AppLayout from "./layouts/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import MeuCadastro from "./pages/MeuCadastro";
@@ -7,54 +10,67 @@ import Temas from "./pages/Temas";
 import Esbocos from "./pages/Esbocos";
 import VersiculosPorTema from "./pages/VersiculosPorTema";
 import Login from "./pages/Login";
-import { useAuth } from "./hooks/useAuth";
+
 // Componente de Rota Protegida
 const ProtectedRoute = ({ children }) => {
-    const { isAuthenticated, isProfileComplete } = useAuth();
+    const { isAuthenticated, isProfileComplete, loading } = useAuth();
+
+    // Se estiver carregando a verificação de auth, pode mostrar um loading
+    if (loading) return <div>Carregando...</div>;
+
     if (!isAuthenticated) {
-        return _jsx(Navigate, { to: "/login", replace: true });
+        return <Navigate to="/login" replace />;
     }
-    // Se o usuário estiver autenticado, mas o perfil não estiver completo,
-    // redireciona para a página de cadastro para completar.
+
+    // Se o usuário logou mas não completou cadastro
     if (!isProfileComplete && children.type !== MeuCadastro) {
-        return _jsx(Navigate, { to: "/meu-cadastro", replace: true });
+        return <Navigate to="/meu-cadastro" replace />;
     }
+
     return children;
 };
+
+// Definição das Rotas usando a API moderna (createBrowserRouter)
 const router = createBrowserRouter([
     {
         path: "/login",
-        element: _jsx(Login, {}),
+        element: <Login />,
     },
     {
         path: "/",
-        element: _jsx(ProtectedRoute, { children: _jsx(AppLayout, {}) }),
+        // Protege todo o Layout Principal
+        element: (
+            <ProtectedRoute>
+                <AppLayout />
+            </ProtectedRoute>
+        ),
         children: [
             {
                 index: true,
-                element: _jsx(Dashboard, {}),
+                element: <Dashboard />,
             },
             {
                 path: "meu-cadastro",
-                element: _jsx(MeuCadastro, {}),
+                element: <MeuCadastro />,
             },
             {
                 path: "temas",
-                element: _jsx(Temas, {}),
+                element: <Temas />,
             },
             {
                 path: "esbocos",
-                element: _jsx(Esbocos, {}),
+                element: <Esbocos />,
             },
             {
                 path: "versiculos-por-tema",
-                element: _jsx(VersiculosPorTema, {}),
+                element: <VersiculosPorTema />,
             },
         ],
     },
     {
         path: "*",
-        element: _jsx(Navigate, { to: "/", replace: true }),
+        element: <Navigate to="/" replace />,
     },
 ]);
+
 export default router;
