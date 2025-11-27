@@ -1,15 +1,13 @@
 import React from 'react';
 import { RouterProvider } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext'; 
 import router from './routes'; // Importa o router que criamos acima
 
 function App() {
   return (
-    // 1. O AuthProvider fica por fora para fornecer o contexto
-    <AuthProvider>
-       {/* 2. O RouterProvider consome o router configurado */}
-       <RouterProvider router={router} />
-    </AuthProvider>
+    // RouterProvider é o provedor do roteamento; o AuthProvider foi movido
+    // para dentro do roteador (ver `src/routes.jsx`) para que hooks
+    // como `useNavigate()` funcionem dentro do provider.
+    <RouterProvider router={router} />
   );
 }
 

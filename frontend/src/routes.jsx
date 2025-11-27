@@ -1,6 +1,7 @@
 import React from 'react';
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
+import { AuthProvider } from "./context/AuthContext";
 
 // Importe seus componentes (garanta que os caminhos estejam certos)
 import AppLayout from "./layouts/AppLayout";
@@ -32,44 +33,55 @@ const ProtectedRoute = ({ children }) => {
 
 // Definição das Rotas usando a API moderna (createBrowserRouter)
 const router = createBrowserRouter([
+    // Coloca o AuthProvider dentro do Router: assim hooks como useNavigate
+    // podem ser usados pelo próprio provider.
     {
-        path: "/login",
-        element: <Login />,
-    },
-    {
-        path: "/",
-        // Protege todo o Layout Principal
         element: (
-            <ProtectedRoute>
-                <AppLayout />
-            </ProtectedRoute>
+            <AuthProvider>
+                <Outlet />
+            </AuthProvider>
         ),
         children: [
             {
-                index: true,
-                element: <Dashboard />,
+                path: "/login",
+                element: <Login />,
             },
             {
-                path: "meu-cadastro",
-                element: <MeuCadastro />,
+                path: "/",
+                // Protege todo o Layout Principal
+                element: (
+                    <ProtectedRoute>
+                        <AppLayout />
+                    </ProtectedRoute>
+                ),
+                children: [
+                    {
+                        index: true,
+                        element: <Dashboard />,
+                    },
+                    {
+                        path: "meu-cadastro",
+                        element: <MeuCadastro />,
+                    },
+                    {
+                        path: "temas",
+                        element: <Temas />,
+                    },
+                    {
+                        path: "esbocos",
+                        element: <Esbocos />,
+                    },
+                    {
+                        path: "versiculos-por-tema",
+                        element: <VersiculosPorTema />,
+                    },
+                ],
             },
             {
-                path: "temas",
-                element: <Temas />,
-            },
-            {
-                path: "esbocos",
-                element: <Esbocos />,
-            },
-            {
-                path: "versiculos-por-tema",
-                element: <VersiculosPorTema />,
+                path: "*",
+                element: <Navigate to="/" replace />,
             },
         ],
-    },
-    {
-        path: "*",
-        element: <Navigate to="/" replace />,
     },
 ]);
 
