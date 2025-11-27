@@ -1,10 +1,13 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy import MetaData
 import os
 
 # Configuração do banco de dados (usaremos SQLite para simplicidade no ambiente sandbox)
 # Em um ambiente de produção, o usuário deve configurar para PostgreSQL (pg_catalog)
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./app_meu_pastor.db")
+
+metadata_obj = MetaData(schema="app_meu_pastor")
 
 engine = create_async_engine(
     SQLALCHEMY_DATABASE_URL, 
@@ -20,7 +23,7 @@ AsyncSessionLocal = sessionmaker(
     expire_on_commit=False,
 )
 
-Base = declarative_base()
+Base = declarative_base(metadata=metadata_obj)
 
 async def get_db():
     async with AsyncSessionLocal() as session:
