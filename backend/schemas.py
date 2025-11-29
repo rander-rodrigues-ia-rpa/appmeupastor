@@ -1,8 +1,7 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
 from typing import Optional
 
-# Base Schema
 class BaseSchema(BaseModel):
     class Config:
         from_attributes = True
@@ -16,14 +15,18 @@ class UsuarioBase(BaseSchema):
     perfil_usuario: Optional[str] = None
 
 class UsuarioCreate(UsuarioBase):
-    # Usado para o primeiro login social, onde só temos nome e email
-    pass
+    password: Optional[str] = Field(None, min_length=6)
 
-class UsuarioUpdate(UsuarioBase):
-    # Usado para completar o cadastro
-    telefone_contato: str
-    perfil_usuario: str
-    is_profile_complete: str = "S"
+class UsuarioLogin(BaseSchema):
+    email: EmailStr
+    password: str
+
+class UsuarioUpdate(BaseSchema):
+    nome: Optional[str] = None
+    username: Optional[str] = None
+    telefone_contato: Optional[str] = None
+    perfil_usuario: Optional[str] = None
+    is_profile_complete: Optional[str] = None
 
 class UsuarioInDB(UsuarioBase):
     id: int
@@ -43,7 +46,8 @@ class TemaBase(BaseSchema):
 class TemaCreate(TemaBase):
     pass
 
-class TemaUpdate(TemaBase):
+class TemaUpdate(BaseSchema):
+    descricao: Optional[str] = None
     ativo: Optional[str] = None
 
 class Tema(TemaBase):
@@ -59,7 +63,9 @@ class SubtemaBase(BaseSchema):
 class SubtemaCreate(SubtemaBase):
     pass
 
-class SubtemaUpdate(SubtemaBase):
+class SubtemaUpdate(BaseSchema):
+    descricao: Optional[str] = None
+    tema_id: Optional[int] = None
     ativo: Optional[str] = None
 
 class Subtema(SubtemaBase):
@@ -80,8 +86,15 @@ class CatalogoEsbocosBase(BaseSchema):
 class CatalogoEsbocosCreate(CatalogoEsbocosBase):
     pass
 
-class CatalogoEsbocosUpdate(CatalogoEsbocosBase):
-    pass
+class CatalogoEsbocosUpdate(BaseSchema):
+    tema_id: Optional[int] = None
+    subtema_id: Optional[int] = None
+    titulo: Optional[str] = None
+    texto_biblico: Optional[str] = None
+    resumo: Optional[str] = None
+    link_arquivo_esboco: Optional[str] = None
+    link_arquivo_pregacao_completa: Optional[str] = None
+    esboco_manual: Optional[str] = None
 
 class CatalogoEsbocos(CatalogoEsbocosBase):
     id: int
@@ -98,8 +111,11 @@ class VersiculoTemaBase(BaseSchema):
 class VersiculoTemaCreate(VersiculoTemaBase):
     pass
 
-class VersiculoTemaUpdate(VersiculoTemaBase):
-    pass
+class VersiculoTemaUpdate(BaseSchema):
+    tema_id: Optional[int] = None
+    subtema_id: Optional[int] = None
+    versiculo: Optional[str] = None
+    descricao_versiculo: Optional[str] = None
 
 class VersiculoTema(VersiculoTemaBase):
     id: int
