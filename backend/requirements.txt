@@ -27,3 +27,5 @@ redis==7.1.0
 
 # Production server
 gunicorn==23.0.0
+
+bcrypt==3.2.2
