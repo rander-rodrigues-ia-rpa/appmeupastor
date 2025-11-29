@@ -8,6 +8,7 @@ from temas import router as temas_router
 from esbocos import router as esbocos_router
 from versiculos import router as versiculos_router
 from dashboard import router as dashboard_router
+from fastapi.middleware.cors import CORSMiddleware
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -22,19 +23,21 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Configuração do CORS para permitir o frontend React
+# 2. Defina quem pode acessar seu backend
 origins = [
-    "http://localhost:5173",  # Porta padrão do Vite
-    "http://localhost:5174",  # Porta alternativa do Vite
-    # Adicionar o domínio de produção aqui
+    "http://72.61.40.223:8005", # O endereço exato do seu frontend
+    "http://localhost:8005",
+    "http://127.0.0.1:8005",
+    "*" # DICA: Use "*" temporariamente se quiser liberar para TODO MUNDO (útil para testar)
 ]
 
+# 3. Adicione o Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"], # Permite GET, POST, PUT, DELETE...
+    allow_headers=["*"], # Permite todos os cabeçalhos
 )
 
 # Inclusão das rotas
