@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import api from "../services/api";
-import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import Modal from "../components/Modal";
+import { PlusIcon, PencilIcon, TrashIcon, FolderIcon } from "@heroicons/react/24/outline";
 
 interface Tema {
   id: number;
@@ -8,147 +9,352 @@ interface Tema {
   ativo: string;
 }
 
+interface Subtema {
+  id: number;
+  descricao: string;
+  tema_id: number;
+  ativo: string;
+}
+
 const Temas = () => {
   const [temas, setTemas] = useState<Tema[]>([]);
+  const [subtemas, setSubtemas] = useState<Record<number, Subtema[]>>({});
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [newTema, setNewTema] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [subtemaModalOpen, setSubtemaModalOpen] = useState(false);
   const [editingTema, setEditingTema] = useState<Tema | null>(null);
+  const [selectedTemaId, setSelectedTemaId] = useState<number | null>(null);
+  
+  const [formData, setFormData] = useState({
+    descricao: "",
+    ativo: "S"
+  });
 
-  const fetchTemas = async () => {
-    try {
-      const response = await api.get("/temas");
-      setTemas(response.data);
-      setLoading(false);
-    } catch (err) {
-      setError("Erro ao carregar temas.");
-      setLoading(false);
-    }
-  };
+  const [subtemaFormData, setSubtemaFormData] = useState({
+    descricao: "",
+    tema_id: 0,
+    ativo: "S"
+  });
 
   useEffect(() => {
     fetchTemas();
   }, []);
 
-  const handleCreateTema = async () => {
-    if (!newTema.trim()) return;
+  const fetchTemas = async () => {
     try {
-      const response = await api.post("/temas", { descricao: newTema });
-      setTemas([...temas, response.data]);
-      setNewTema("");
-    } catch (err) {
-      alert("Erro ao criar tema.");
-    }
-  };
-
-  const handleUpdateTema = async () => {
-    if (!editingTema || !editingTema.descricao.trim()) return;
-    try {
-      const response = await api.put(`/temas/${editingTema.id}`, { 
-        descricao: editingTema.descricao,
-        ativo: editingTema.ativo
+      const response = await api.get("/temas");
+      setTemas(response.data);
+      
+      // Fetch subtemas para cada tema
+      response.data.forEach((tema: Tema) => {
+        fetchSubtemas(tema.id);
       });
-      setTemas(temas.map(t => (t.id === editingTema.id ? response.data : t)));
-      setEditingTema(null);
+      
+      setLoading(false);
     } catch (err) {
-      alert("Erro ao atualizar tema.");
+      console.error("Erro ao carregar temas:", err);
+      setLoading(false);
     }
   };
 
-  const handleDeleteTema = async (id: number) => {
-    if (!window.confirm("Tem certeza que deseja deletar este tema? Todos os subtemas, esboços e versículos relacionados serão afetados.")) return;
+  const fetchSubtemas = async (temaId: number) => {
+    try {
+      const response = await api.get(`/temas/${temaId}/subtemas`);
+      setSubtemas(prev => ({ ...prev, [temaId]: response.data }));
+    } catch (err) {
+      console.error("Erro ao carregar subtemas:", err);
+    }
+  };
+
+  const handleOpenModal = (tema?: Tema) => {
+    if (tema) {
+      setEditingTema(tema);
+      setFormData({
+        descricao: tema.descricao,
+        ativo: tema.ativo
+      });
+    } else {
+      setEditingTema(null);
+      setFormData({
+        descricao: "",
+        ativo: "S"
+      });
+    }
+    setModalOpen(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      if (editingTema) {
+        await api.put(`/temas/${editingTema.id}`, formData);
+      } else {
+        await api.post("/temas", { descricao: formData.descricao });
+      }
+      
+      fetchTemas();
+      setModalOpen(false);
+      setFormData({ descricao: "", ativo: "S" });
+    } catch (err: any) {
+      alert(err.response?.data?.detail || "Erro ao salvar tema");
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm("Tem certeza que deseja deletar este tema? Todos os subtemas relacionados também serão deletados.")) {
+      return;
+    }
+    
     try {
       await api.delete(`/temas/${id}`);
-      setTemas(temas.filter(t => t.id !== id));
-    } catch (err) {
-      alert("Erro ao deletar tema.");
+      fetchTemas();
+    } catch (err: any) {
+      alert(err.response?.data?.detail || "Erro ao deletar tema");
     }
   };
 
-  if (loading) return <div className="text-center">Carregando temas...</div>;
-  if (error) return <div className="text-center text-red-500">{error}</div>;
+  const handleOpenSubtemaModal = (temaId: number) => {
+    setSelectedTemaId(temaId);
+    setSubtemaFormData({
+      descricao: "",
+      tema_id: temaId,
+      ativo: "S"
+    });
+    setSubtemaModalOpen(true);
+  };
+
+  const handleSubtemaSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      await api.post(`/temas/${selectedTemaId}/subtemas`, subtemaFormData);
+      if (selectedTemaId) {
+        fetchSubtemas(selectedTemaId);
+      }
+      setSubtemaModalOpen(false);
+      setSubtemaFormData({ descricao: "", tema_id: 0, ativo: "S" });
+    } catch (err: any) {
+      alert(err.response?.data?.detail || "Erro ao salvar subtema");
+    }
+  };
+
+  const handleDeleteSubtema = async (subtemaId: number, temaId: number) => {
+    if (!window.confirm("Tem certeza que deseja deletar este subtema?")) {
+      return;
+    }
+    
+    try {
+      await api.delete(`/temas/subtemas/${subtemaId}`);
+      fetchSubtemas(temaId);
+    } catch (err: any) {
+      alert(err.response?.data?.detail || "Erro ao deletar subtema");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold text-gray-800">Cadastro de Temas e Sub-Temas</h2>
-
-      {/* Formulário de Criação */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <h3 className="text-xl font-semibold mb-4">Novo Tema</h3>
-        <div className="flex space-x-3">
-          <input
-            type="text"
-            placeholder="Descrição do novo tema"
-            value={newTema}
-            onChange={(e) => setNewTema(e.target.value)}
-            className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-          />
-          <button
-            onClick={handleCreateTema}
-            className="flex items-center bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
-          >
-            <PlusIcon className="h-5 w-5 mr-2" /> Criar
-          </button>
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-900">Temas e Sub-Temas</h2>
+          <p className="text-gray-600 mt-1">Organize os temas das suas pregações</p>
         </div>
+        <button
+          onClick={() => handleOpenModal()}
+          className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors shadow-md"
+        >
+          <PlusIcon className="h-5 w-5" />
+          Novo Tema
+        </button>
       </div>
 
-      {/* Lista de Temas */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <h3 className="text-xl font-semibold mb-4">Temas Existentes</h3>
-        <ul className="divide-y divide-gray-200">
-          {temas.map((tema) => (
-            <li key={tema.id} className="py-4 flex justify-between items-center">
-              {editingTema?.id === tema.id ? (
-                <div className="flex-1 flex space-x-2">
-                  <input
-                    type="text"
-                    value={editingTema.descricao}
-                    onChange={(e) => setEditingTema({ ...editingTema, descricao: e.target.value })}
-                    className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                  />
-                  <select
-                    value={editingTema.ativo}
-                    onChange={(e) => setEditingTema({ ...editingTema, ativo: e.target.value })}
-                    className="rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                  >
-                    <option value="S">Ativo</option>
-                    <option value="N">Inativo</option>
-                  </select>
-                  <button onClick={handleUpdateTema} className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600">Salvar</button>
-                  <button onClick={() => setEditingTema(null)} className="bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-600">Cancelar</button>
+      {/* Temas List */}
+      <div className="grid gap-4">
+        {temas.map((tema) => (
+          <div key={tema.id} className="bg-white rounded-xl shadow-md overflow-hidden">
+            <div className="p-6">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3">
+                    <FolderIcon className="h-6 w-6 text-green-600" />
+                    <h3 className="text-xl font-semibold text-gray-900">{tema.descricao}</h3>
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      tema.ativo === "S" 
+                        ? "bg-green-100 text-green-800" 
+                        : "bg-gray-100 text-gray-800"
+                    }`}>
+                      {tema.ativo === "S" ? "Ativo" : "Inativo"}
+                    </span>
+                  </div>
+                  
+                  {/* Subtemas */}
+                  <div className="mt-4 ml-9">
+                    {subtemas[tema.id] && subtemas[tema.id].length > 0 ? (
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium text-gray-700">Sub-Temas:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {subtemas[tema.id].map((subtema) => (
+                            <div key={subtema.id} className="flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full">
+                              <span className="text-sm text-gray-700">{subtema.descricao}</span>
+                              <button
+                                onClick={() => handleDeleteSubtema(subtema.id, tema.id)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500">Nenhum sub-tema cadastrado</p>
+                    )}
+                    <button
+                      onClick={() => handleOpenSubtemaModal(tema.id)}
+                      className="mt-2 text-sm text-green-600 hover:text-green-700 font-medium"
+                    >
+                      + Adicionar Sub-Tema
+                    </button>
+                  </div>
                 </div>
-              ) : (
-                <span className={`flex-1 ${tema.ativo === 'N' ? 'line-through text-gray-500' : ''}`}>
-                  {tema.descricao} ({tema.ativo === 'S' ? 'Ativo' : 'Inativo'})
-                </span>
-              )}
-              
-              <div className="space-x-2">
-                <button
-                  onClick={() => setEditingTema(tema)}
-                  className="text-blue-500 hover:text-blue-700 p-1 rounded-full hover:bg-blue-100"
-                  title="Editar Tema"
-                >
-                  <PencilIcon className="h-5 w-5" />
-                </button>
-                <button
-                  onClick={() => handleDeleteTema(tema.id)}
-                  className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100"
-                  title="Deletar Tema"
-                >
-                  <TrashIcon className="h-5 w-5" />
-                </button>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleOpenModal(tema)}
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Editar"
+                  >
+                    <PencilIcon className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(tema.id)}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Deletar"
+                  >
+                    <TrashIcon className="h-5 w-5" />
+                  </button>
+                </div>
               </div>
-            </li>
-          ))}
-        </ul>
+            </div>
+          </div>
+        ))}
+
+        {temas.length === 0 && (
+          <div className="text-center py-12 bg-white rounded-xl">
+            <FolderIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600">Nenhum tema cadastrado ainda</p>
+            <button
+              onClick={() => handleOpenModal()}
+              className="mt-4 text-green-600 hover:text-green-700 font-medium"
+            >
+              Criar seu primeiro tema
+            </button>
+          </div>
+        )}
       </div>
-      
-      {/* Sub-Temas - Implementação simplificada, o CRUD completo de subtemas seria em um modal ou tela separada */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <h3 className="text-xl font-semibold mb-4">Gerenciamento de Sub-Temas</h3>
-        <p className="text-gray-600">Para gerenciar sub-temas, você precisaria de um modal ou uma tela de detalhes do tema. Por enquanto, a API de subtemas está pronta, mas a interface será simplificada.</p>
-      </div>
+
+      {/* Modal Tema */}
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={editingTema ? "Editar Tema" : "Novo Tema"}
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Descrição do Tema *
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.descricao}
+              onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              placeholder="Ex: Fé, Esperança, Amor..."
+            />
+          </div>
+
+          {editingTema && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Status
+              </label>
+              <select
+                value={formData.ativo}
+                onChange={(e) => setFormData({ ...formData, ativo: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
+                <option value="S">Ativo</option>
+                <option value="N">Inativo</option>
+              </select>
+            </div>
+          )}
+
+          <div className="flex gap-3 justify-end pt-4">
+            <button
+              type="button"
+              onClick={() => setModalOpen(false)}
+              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              {editingTema ? "Salvar" : "Criar"}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal Subtema */}
+      <Modal
+        isOpen={subtemaModalOpen}
+        onClose={() => setSubtemaModalOpen(false)}
+        title="Novo Sub-Tema"
+      >
+        <form onSubmit={handleSubtemaSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Descrição do Sub-Tema *
+            </label>
+            <input
+              type="text"
+              required
+              value={subtemaFormData.descricao}
+              onChange={(e) => setSubtemaFormData({ ...subtemaFormData, descricao: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              placeholder="Ex: Fé em tempos difíceis"
+            />
+          </div>
+
+          <div className="flex gap-3 justify-end pt-4">
+            <button
+              type="button"
+              onClick={() => setSubtemaModalOpen(false)}
+              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Criar
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };
