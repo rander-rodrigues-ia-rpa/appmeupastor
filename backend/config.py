@@ -3,7 +3,7 @@ from pydantic import Field
 
 class Settings(BaseSettings):
     # Configurações do Banco de Dados
-    DATABASE_URL: str = Field(default="sqlite+aiosqlite:///./app_meu_pastor.db")
+    DATABASE_URL: str = Field(default="postgresql://usr_app_meu_pastor:appMeuPastor2025@db_postgres:5432/app_meu_pastor")
 
     # Configurações de Autenticação Google
     GOOGLE_CLIENT_ID: str = Field(default="")
