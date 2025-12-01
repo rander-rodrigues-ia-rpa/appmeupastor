@@ -5,7 +5,8 @@ import api from '../services/api';
 interface AuthContextType {
   isAuthenticated: boolean;
   isProfileComplete: boolean;
-  user: any; // Tipo mais específico seria melhor, mas 'any' por enquanto
+  loading: boolean; // Novo campo
+  user: any;
   login: (token: string) => void;
   logout: () => void;
   checkProfileStatus: () => Promise<void>;
@@ -17,33 +18,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isProfileComplete, setIsProfileComplete] = useState(false);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true); // Inicia como true
   const navigate = useNavigate();
 
   const checkProfileStatus = useCallback(async () => {
     const token = localStorage.getItem('token');
+    
     if (!token) {
       setIsAuthenticated(false);
       setIsProfileComplete(false);
       setUser(null);
+      setLoading(false); // Parar loading
       return;
     }
 
     try {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      const response = await api.get('/users/me/status');
-      const status = response.data;
       
+      // Busca status
+      const response = await api.get('/users/me/status');
       setIsAuthenticated(true);
-      setIsProfileComplete(status.is_profile_complete);
+      setIsProfileComplete(response.data.is_profile_complete);
 
-      // Opcional: buscar dados completos do usuário
+      // Busca dados do usuário
       const userResponse = await api.get('/users/me');
       setUser(userResponse.data);
 
     } catch (error) {
-      console.error("Erro ao verificar status do perfil:", error);
-      // Se o token for inválido ou expirado, desloga
+      console.error("Erro ao verificar status:", error);
       logout();
+    } finally {
+      setLoading(false); // Sempre parar o loading no final
     }
   }, []);
 
@@ -53,9 +58,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = (token: string) => {
     localStorage.setItem('token', token);
+    setLoading(true); // Ativa loading ao logar
     setIsAuthenticated(true);
-    checkProfileStatus(); // Verifica o status do perfil após o login
-    navigate('/');
+    checkProfileStatus().then(() => {
+        navigate('/');
+    });
   };
 
   const logout = () => {
@@ -67,7 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isProfileComplete, user, login, logout, checkProfileStatus }}>
+    <AuthContext.Provider value={{ isAuthenticated, isProfileComplete, loading, user, login, logout, checkProfileStatus }}>
       {children}
     </AuthContext.Provider>
   );
