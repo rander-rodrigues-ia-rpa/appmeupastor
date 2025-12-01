@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from database import init_db
+from config import settings
 from auth import router as auth_router
 from users import router as users_router
 from temas import router as temas_router
@@ -30,6 +31,9 @@ origins = [
     "http://127.0.0.1:8005",
     "*" # DICA: Use "*" temporariamente se quiser liberar para TODO MUNDO (útil para testar)
 ]
+
+# Adiciona as origens da configuração (se houver)
+origins.extend(settings.cors_origins_list)
 
 # 3. Adicione o Middleware
 app.add_middleware(
