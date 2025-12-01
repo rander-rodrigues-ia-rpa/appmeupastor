@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from database import init_db
+from config import settings
 from auth import router as auth_router
 from users import router as users_router
 from temas import router as temas_router
@@ -23,18 +24,10 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# 2. Defina quem pode acessar seu backend
-origins = [
-    "http://72.61.40.223:8005", # O endereço exato do seu frontend
-    "http://localhost:8005",
-    "http://127.0.0.1:8005",
-    "*" # DICA: Use "*" temporariamente se quiser liberar para TODO MUNDO (útil para testar)
-]
-
-# 3. Adicione o Middleware
+# 2. Adicione o Middleware CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=settings.cors_origins_list,
     allow_credentials=True,
     allow_methods=["*"], # Permite GET, POST, PUT, DELETE...
     allow_headers=["*"], # Permite todos os cabeçalhos
