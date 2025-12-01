@@ -24,24 +24,24 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# 2. Defina quem pode acessar seu backend
+# 2. Defina explicitamente as origens permitidas (SEM usar "*")
 origins = [
-    "http://72.61.40.223:8005", # O endereço exato do seu frontend
-    "http://localhost:8005",
-    "http://127.0.0.1:8005",
-    "*" # DICA: Use "*" temporariamente se quiser liberar para TODO MUNDO (útil para testar)
+    "http://72.61.40.223:8005",  # O endereço exato do seu frontend na VPS
+    "http://localhost:8005",      # Para testes locais
+    "http://127.0.0.1:8005",      # Variação local
 ]
 
-# Adiciona as origens da configuração (se houver)
-origins.extend(settings.cors_origins_list)
+# Adiciona as origens extras do .env se houver
+if settings.cors_origins_list:
+    origins.extend(settings.cors_origins_list)
 
 # 3. Adicione o Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"], # Permite GET, POST, PUT, DELETE...
-    allow_headers=["*"], # Permite todos os cabeçalhos
+    allow_origins=origins, # Usa a lista explícita
+    allow_credentials=True, # Permite cookies/tokens de autenticação
+    allow_methods=["*"], 
+    allow_headers=["*"], 
 )
 
 # Inclusão das rotas
