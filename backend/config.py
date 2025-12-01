@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     # Configurações JWT
     SECRET_KEY: str = Field(default="change-this-secret-key-in-production")
     ALGORITHM: str = Field(default="HS256")
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=60 * 24 * 7)  # 7 dias
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=60 * 24)  # 1 dia (mais seguro)
 
     # Configurações de Cache (Redis)
     REDIS_URL: str = Field(default="redis://localhost:6379/0")
@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     
     # Configurações da Aplicação
     APP_NAME: str = Field(default="App Meu Pastor")
-    DEBUG: bool = Field(default=True)
+    DEBUG: bool = Field(default=False)
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
     
