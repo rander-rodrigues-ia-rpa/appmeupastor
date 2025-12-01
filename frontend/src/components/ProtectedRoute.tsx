@@ -1,7 +1,6 @@
-import React, { isValidElement, ReactElement } from "react";
-import { Navigate } from "react-router-dom";
+import React, { ReactElement } from "react";
+import { Navigate, useLocation } from "react-router-dom"; // Adicione useLocation
 import { useAuth } from "../hooks/useAuth";
-import MeuCadastro from "../pages/MeuCadastro";
 
 interface ProtectedRouteProps {
   children: ReactElement;
@@ -9,23 +8,24 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { isAuthenticated, user } = useAuth();
+  const location = useLocation(); // Hook para pegar a URL atual
   
-  // A verificação de isProfileComplete deve ser feita usando o objeto user,
-  // pois o estado isProfileComplete no AuthContext pode não estar atualizado
-  // no momento da renderização inicial.
   const isProfileComplete = user?.is_profile_complete === "S";
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  // Se o usuário estiver autenticado, mas o perfil não estiver completo,
-  // redireciona para a página de cadastro para completar.
-  // Verifica se children é um elemento React válido antes de acessar .type
-  // E garante que não está tentando redirecionar a própria página MeuCadastro
-  if (!isProfileComplete && isValidElement(children) && children.type !== MeuCadastro) {
+  // Verifica se o perfil está incompleto E se o usuário JÁ NÃO ESTÁ na página de cadastro
+  if (!isProfileComplete && location.pathname !== "/meu-cadastro") {
     return <Navigate to="/meu-cadastro" replace />;
   }
+
+  // Se o perfil ESTIVER completo e o usuário tentar acessar a tela de cadastro manualmente,
+  // você pode opcionalmente redirecionar para a home, ou deixar ele acessar.
+  // if (isProfileComplete && location.pathname === "/meu-cadastro") {
+  //   return <Navigate to="/" replace />;
+  // }
 
   return children;
 };
