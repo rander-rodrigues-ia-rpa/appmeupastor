@@ -1,33 +1,42 @@
-import React, { ReactElement } from "react";
-import { Navigate, useLocation } from "react-router-dom"; // Adicione useLocation
+import React from "react";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 interface ProtectedRouteProps {
-  children: ReactElement;
+  children: React.ReactNode;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated, user } = useAuth();
-  const location = useLocation(); // Hook para pegar a URL atual
-  
-  const isProfileComplete = user?.is_profile_complete === "S";
+  // Adicionamos 'loading' que vamos criar no AuthContext
+  const { isAuthenticated, isProfileComplete, loading } = useAuth();
+  const location = useLocation();
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+  // 1. Enquanto verifica o token, mostre um loading para não redirecionar errado
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-gray-100">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      </div>
+    );
   }
 
-  // Verifica se o perfil está incompleto E se o usuário JÁ NÃO ESTÁ na página de cadastro
+  // 2. Se não estiver logado, manda pro login
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // 3. Se o perfil não estiver completo E o usuário NÃO estiver na página de cadastro
   if (!isProfileComplete && location.pathname !== "/meu-cadastro") {
     return <Navigate to="/meu-cadastro" replace />;
   }
 
-  // Se o perfil ESTIVER completo e o usuário tentar acessar a tela de cadastro manualmente,
-  // você pode opcionalmente redirecionar para a home, ou deixar ele acessar.
-  // if (isProfileComplete && location.pathname === "/meu-cadastro") {
-  //   return <Navigate to="/" replace />;
-  // }
+  // 4. Se o perfil JÁ estiver completo e o usuário tentar acessar /meu-cadastro
+  // Opcional: redirecionar para dashboard para evitar acesso desnecessário
+  if (isProfileComplete && location.pathname === "/meu-cadastro") {
+     return <Navigate to="/" replace />;
+  }
 
-  return children;
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;
