@@ -1,4 +1,5 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute";
 import AppLayout from "./layouts/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import MeuCadastro from "./pages/MeuCadastro";
@@ -6,31 +7,19 @@ import Temas from "./pages/Temas";
 import Esbocos from "./pages/Esbocos";
 import VersiculosPorTema from "./pages/VersiculosPorTema";
 import Login from "./pages/Login";
-import { useAuth } from "./hooks/useAuth";
+import AuthCallback from "./pages/AuthCallback";
 
-// Componente de Rota Protegida
-import React, { isValidElement, ReactElement } from "react";
-const ProtectedRoute = ({ children }: { children: ReactElement }) => {
-  const { isAuthenticated, isProfileComplete } = useAuth();
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
 
-  // Se o usuário estiver autenticado, mas o perfil não estiver completo,
-  // redireciona para a página de cadastro para completar.
-  // Verifica se children é um elemento React válido antes de acessar .type
-  if (!isProfileComplete && isValidElement(children) && children.type !== MeuCadastro) {
-    return <Navigate to="/meu-cadastro" replace />;
-  }
-
-  return children;
-};
 
 const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
+  },
+  {
+    path: "/auth/callback",
+    element: <AuthCallback />,
   },
   {
     path: "/",
