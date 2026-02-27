@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     # Configurações de Autenticação Google
     GOOGLE_CLIENT_ID: str = Field(default="240518525552-qnfs5s1t6fqlrctukh9tfa16p3q0s1ed.apps.googleusercontent.com")
     GOOGLE_CLIENT_SECRET: str = Field(default="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")
-    GOOGLE_REDIRECT_URI: str = Field(default="https://meupastor.rrsolucoesia.cloud")
+    GOOGLE_REDIRECT_URI: str = Field(default="https://meupastor.rrsolucoesia.cloud/auth/google/callback")
 
     # Configurações JWT
     SECRET_KEY: str = Field(default="change-this-secret-key-in-production")
