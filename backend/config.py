@@ -6,8 +6,8 @@ class Settings(BaseSettings):
     DATABASE_URL: str = Field(default="postgresql://usr_app_meu_pastor:appMeuPastor2025@db_postgres:5432/app_meu_pastor")
 
     # Configurações de Autenticação Google
-    GOOGLE_CLIENT_ID: str = Field(default="")
-    GOOGLE_CLIENT_SECRET: str = Field(default="")
+    GOOGLE_CLIENT_ID: str = Field(default="240518525552-qnfs5s1t6fqlrctukh9tfa16p3q0s1ed.apps.googleusercontent.com")
+    GOOGLE_CLIENT_SECRET: str = Field(default="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")
     GOOGLE_REDIRECT_URI: str = Field(default="http://localhost:8000/auth/google/callback")
 
     # Configurações JWT
