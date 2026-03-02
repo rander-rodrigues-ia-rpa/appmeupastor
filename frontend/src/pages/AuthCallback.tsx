@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
@@ -6,16 +6,21 @@ const AuthCallback = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { login } = useAuth();
+  const hasProcessed = useRef(false);
 
   useEffect(() => {
+    if (hasProcessed.current) return;
+
     const token = searchParams.get('token');
-    
+
     if (token) {
+      hasProcessed.current = true;
       // Se o token estiver presente, realiza o login e redireciona
       login(token);
       // O login já chama checkProfileStatus e redireciona para a dashboard
       // se o perfil estiver completo, ou para /meu-cadastro se estiver incompleto.
     } else {
+      hasProcessed.current = true;
       // Se não houver token, algo deu errado (ex: erro no backend)
       console.error("Token não encontrado no callback de autenticação.");
       // Redireciona para a página de login com uma mensagem de erro

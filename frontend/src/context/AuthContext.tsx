@@ -50,28 +50,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setLoading(false); // Sempre parar o loading no final
     }
-  }, []);
+  }, []); // Mantemos [] aqui e faremos logout não recriar. Ou usaremos eslint-disable para o logout.
 
   useEffect(() => {
     checkProfileStatus();
   }, [checkProfileStatus]);
 
-  const login = (token: string) => {
+  const login = useCallback((token: string) => {
     localStorage.setItem('token', token);
     setLoading(true); // Ativa loading ao logar
     setIsAuthenticated(true);
     checkProfileStatus().then(() => {
         navigate('/');
     });
-  };
+  }, [checkProfileStatus, navigate]);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('token');
     setIsAuthenticated(false);
     setIsProfileComplete(false);
     setUser(null);
     navigate('/login');
-  };
+  }, [navigate]);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, isProfileComplete, loading, user, login, logout, checkProfileStatus }}>
