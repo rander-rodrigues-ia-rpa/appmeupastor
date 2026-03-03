@@ -24,7 +24,7 @@ const Temas = () => {
   const [subtemaModalOpen, setSubtemaModalOpen] = useState(false);
   const [editingTema, setEditingTema] = useState<Tema | null>(null);
   const [selectedTemaId, setSelectedTemaId] = useState<number | null>(null);
-  
+
   const [formData, setFormData] = useState({
     descricao: "",
     ativo: "S"
@@ -42,14 +42,14 @@ const Temas = () => {
 
   const fetchTemas = async () => {
     try {
-      const response = await api.get("/temas");
+      const response = await api.get("/temas/");
       setTemas(response.data);
-      
+
       // Fetch subtemas para cada tema
       response.data.forEach((tema: Tema) => {
         fetchSubtemas(tema.id);
       });
-      
+
       setLoading(false);
     } catch (err) {
       console.error("Erro ao carregar temas:", err);
@@ -85,14 +85,14 @@ const Temas = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       if (editingTema) {
         await api.put(`/temas/${editingTema.id}`, formData);
       } else {
-        await api.post("/temas", { descricao: formData.descricao });
+        await api.post("/temas/", { descricao: formData.descricao });
       }
-      
+
       fetchTemas();
       setModalOpen(false);
       setFormData({ descricao: "", ativo: "S" });
@@ -105,7 +105,7 @@ const Temas = () => {
     if (!window.confirm("Tem certeza que deseja deletar este tema? Todos os subtemas relacionados também serão deletados.")) {
       return;
     }
-    
+
     try {
       await api.delete(`/temas/${id}`);
       fetchTemas();
@@ -126,7 +126,7 @@ const Temas = () => {
 
   const handleSubtemaSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       await api.post(`/temas/${selectedTemaId}/subtemas`, subtemaFormData);
       if (selectedTemaId) {
@@ -143,7 +143,7 @@ const Temas = () => {
     if (!window.confirm("Tem certeza que deseja deletar este subtema?")) {
       return;
     }
-    
+
     try {
       await api.delete(`/temas/subtemas/${subtemaId}`);
       fetchSubtemas(temaId);
@@ -187,15 +187,14 @@ const Temas = () => {
                   <div className="flex items-center gap-3">
                     <FolderIcon className="h-6 w-6 text-green-600" />
                     <h3 className="text-xl font-semibold text-gray-900">{tema.descricao}</h3>
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      tema.ativo === "S" 
-                        ? "bg-green-100 text-green-800" 
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${tema.ativo === "S"
+                        ? "bg-green-100 text-green-800"
                         : "bg-gray-100 text-gray-800"
-                    }`}>
+                      }`}>
                       {tema.ativo === "S" ? "Ativo" : "Inativo"}
                     </span>
                   </div>
-                  
+
                   {/* Subtemas */}
                   <div className="mt-4 ml-9">
                     {subtemas[tema.id] && subtemas[tema.id].length > 0 ? (

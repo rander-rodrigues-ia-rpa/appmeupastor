@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import api from "../services/api";
 import Modal from "../components/Modal";
-import { 
-  PlusIcon, 
-  PencilIcon, 
-  TrashIcon, 
+import {
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
   BookOpenIcon,
-  MagnifyingGlassIcon 
+  MagnifyingGlassIcon
 } from "@heroicons/react/24/outline";
 
 interface Esboco {
@@ -41,7 +41,7 @@ const Esbocos = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingEsboco, setEditingEsboco] = useState<Esboco | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  
+
   const [formData, setFormData] = useState({
     titulo: "",
     texto_biblico: "",
@@ -66,8 +66,8 @@ const Esbocos = () => {
   const fetchData = async () => {
     try {
       const [esbocosRes, temasRes] = await Promise.all([
-        api.get("/esbocos"),
-        api.get("/temas")
+        api.get("/esbocos/"),
+        api.get("/temas/")
       ]);
       setEsbocos(esbocosRes.data);
       setTemas(temasRes.data);
@@ -121,7 +121,7 @@ const Esbocos = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const dataToSend = {
       ...formData,
       subtema_id: formData.subtema_id || null,
@@ -129,14 +129,14 @@ const Esbocos = () => {
       link_arquivo_pregacao_completa: formData.link_arquivo_pregacao_completa || null,
       esboco_manual: formData.esboco_manual || null
     };
-    
+
     try {
       if (editingEsboco) {
         await api.put(`/esbocos/${editingEsboco.id}`, dataToSend);
       } else {
-        await api.post("/esbocos", dataToSend);
+        await api.post("/esbocos/", dataToSend);
       }
-      
+
       fetchData();
       setModalOpen(false);
     } catch (err: any) {
@@ -148,7 +148,7 @@ const Esbocos = () => {
     if (!window.confirm("Tem certeza que deseja deletar este esboço?")) {
       return;
     }
-    
+
     try {
       await api.delete(`/esbocos/${id}`);
       fetchData();
@@ -219,7 +219,7 @@ const Esbocos = () => {
                         <span className="font-semibold">Texto:</span> {esboco.texto_biblico}
                       </p>
                       <p className="text-gray-700 mb-3">{esboco.resumo}</p>
-                      
+
                       <div className="flex flex-wrap gap-2 items-center">
                         <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
                           {getTemaDescricao(esboco.tema_id)}

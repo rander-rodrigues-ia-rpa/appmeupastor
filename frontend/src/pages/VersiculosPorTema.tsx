@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import api from "../services/api";
 import Modal from "../components/Modal";
-import { 
-  PlusIcon, 
-  PencilIcon, 
-  TrashIcon, 
+import {
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
   BookmarkIcon,
-  MagnifyingGlassIcon 
+  MagnifyingGlassIcon
 } from "@heroicons/react/24/outline";
 
 interface Versiculo {
@@ -38,7 +38,7 @@ const VersiculosPorTema = () => {
   const [editingVersiculo, setEditingVersiculo] = useState<Versiculo | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterTema, setFilterTema] = useState<number>(0);
-  
+
   const [formData, setFormData] = useState({
     versiculo: "",
     descricao_versiculo: "",
@@ -59,8 +59,8 @@ const VersiculosPorTema = () => {
   const fetchData = async () => {
     try {
       const [versiculosRes, temasRes] = await Promise.all([
-        api.get("/versiculos"),
-        api.get("/temas")
+        api.get("/versiculos/"),
+        api.get("/temas/")
       ]);
       setVersiculos(versiculosRes.data);
       setTemas(temasRes.data);
@@ -106,19 +106,19 @@ const VersiculosPorTema = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const dataToSend = {
       ...formData,
       subtema_id: formData.subtema_id || null
     };
-    
+
     try {
       if (editingVersiculo) {
         await api.put(`/versiculos/${editingVersiculo.id}`, dataToSend);
       } else {
-        await api.post("/versiculos", dataToSend);
+        await api.post("/versiculos/", dataToSend);
       }
-      
+
       fetchData();
       setModalOpen(false);
     } catch (err: any) {
@@ -130,7 +130,7 @@ const VersiculosPorTema = () => {
     if (!window.confirm("Tem certeza que deseja deletar este versículo?")) {
       return;
     }
-    
+
     try {
       await api.delete(`/versiculos/${id}`);
       fetchData();
@@ -187,7 +187,7 @@ const VersiculosPorTema = () => {
             className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
           />
         </div>
-        
+
         <select
           value={filterTema}
           onChange={(e) => setFilterTema(Number(e.target.value))}
